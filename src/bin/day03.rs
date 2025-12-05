@@ -1,6 +1,6 @@
 mod utils;
 
-fn largest_joltage(bank: &&str) -> u32 {
+fn largest_joltage(bank: &&str) -> u64 {
     let max_first_digit = bank[0..bank.len() - 1]
         .chars()
         .map(|c| c.to_digit(10).unwrap())
@@ -26,13 +26,29 @@ fn largest_joltage(bank: &&str) -> u32 {
     result
 }
 
-fn solve_part1(input: &str) -> u32 {
+fn largest_joltage_part2(bank: &&str) -> u64 {
+    println!("Bank: {}", bank);
+    let mut max_digit_str = String::new();
+    let mut curr_pos = 0;
+    for decimal_point in (0..12).rev() {
+        let segment = &bank[curr_pos..bank.len() - decimal_point];
+        let max_digit = segment.chars().map(|c| c.to_digit(10).unwrap()).max().unwrap();
+        let max_digit_pos = segment.chars().position(|c| c.to_digit(10).unwrap() == max_digit).unwrap();
+        max_digit_str.push_str(&max_digit.to_string());
+        println!("  Segment: {}, Max Digit: {} (position {}), Decimal: {}", segment, max_digit, max_digit_pos, decimal_point);
+        curr_pos += max_digit_pos + 1;
+    }
+    max_digit_str.parse().unwrap()
+}
+
+fn solve_part1(input: &str) -> u64 {
     let banks = utils::parse_input(input);
     banks.iter().map(largest_joltage).sum()
 }
 
-fn solve_part2(input: &str) -> u32 {
-    0
+fn solve_part2(input: &str) -> u64 {
+    let banks = utils::parse_input(input);
+    banks.iter().map(largest_joltage_part2).sum()
 }
 
 fn main() {
@@ -60,6 +76,6 @@ mod tests {
     #[test]
     fn test_solve_part2() {
         let result = solve_part2(TEST_INPUT);
-        assert!(result == 0);
+        assert_eq!(result, 3121910778619);
     }
 }
