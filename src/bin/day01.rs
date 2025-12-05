@@ -22,12 +22,39 @@ fn solve_part1(input: &str) -> u32 {
         if current_dial < 0 {
             current_dial += 100;
         }
-        if current_dial >= 100 {
-            current_dial -= 100;
-        }
         if current_dial == 0 {
             count += 1;
         }
+    });
+    count
+}
+
+fn solve_part2(input: &str) -> u32 {
+    let input_rows: Vec<&str> = utils::parse_input(&input);
+    let directions: Vec<i32> = input_rows.iter().map(parse_row).collect();
+    let mut current_dial = STARTING_DIAL as i32;
+
+    let mut count: u32 = 0;
+    directions.iter().for_each(|step| {
+        let prev_dial = current_dial;
+        let revolutions = step.abs() / 100;
+        count += revolutions as u32;
+        let remainder = step % 100;
+
+        current_dial += remainder;
+
+        if current_dial == 0 {
+            count += 1;
+        } else if current_dial < 0 {
+            current_dial += 100;
+            if prev_dial > 0 {
+                count += 1;
+            }
+        } else if current_dial >= 100 {
+            current_dial -= 100;
+            count += 1;
+        }
+        println!("Step: {}, dial: {} -> {}, Count: {}", step, prev_dial, current_dial, count);
     });
     count
 }
@@ -36,6 +63,8 @@ fn main() {
     let input_text: String = utils::load_input(1);
     let password = solve_part1(&input_text);
     println!("Part 1: The password is {}", password);
+    let password = solve_part2(&input_text);
+    println!("Part 2: The password is {}", password);
 }
 
 #[cfg(test)]
@@ -62,5 +91,20 @@ L82";
     fn test_solve_part1() {
         let result = solve_part1(TEST_INPUT);
         assert_eq!(result, 3);
+    }
+    #[test]
+    fn test_solve_part2() {
+        let result = solve_part2(TEST_INPUT);
+        assert_eq!(result, 6);
+    }
+
+    #[test]
+    fn test_solve_part2_at_a_hundred() {
+        let input = r"R50
+R50
+R50
+R50";
+        let result = solve_part2(input);
+        assert_eq!(result, 2);
     }
 }
