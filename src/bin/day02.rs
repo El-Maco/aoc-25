@@ -27,6 +27,30 @@ fn is_invalid(num: &u64) -> bool {
     false
 }
 
+fn is_invalid_part2(num: &u64) -> bool {
+    let num_str = num.to_string();
+    let l = num_str.len() as u32;
+    let windows: Vec<u32> = (1..=l / 2).collect();
+    let mut window_repeats = windows.iter().map(|window_size| {
+        if l % window_size != 0 {
+            return false;
+        }
+
+        let mut repeats = true;
+        let pattern = &num_str[0..*window_size as usize];
+        for i in (0..l).step_by(*window_size as usize) {
+            let end = (i + *window_size) as usize;
+            let segment = &num_str[i as usize..end];
+            if segment != pattern {
+                repeats = false;
+                break;
+            }
+        }
+        repeats
+    });
+    window_repeats.any(|x| x)
+}
+
 fn solve_part1(input: &str) -> u64 {
     let ranges = separate_ranges(input);
     ranges.iter().map(|(start, end)| {
@@ -44,7 +68,19 @@ fn solve_part1(input: &str) -> u64 {
 }
 
 fn solve_part2(input: &str) -> u64 {
-    todo!()
+    let ranges = separate_ranges(input);
+    ranges.iter().map(|(start, end)| {
+        // Create a range from start to end (inclusive)
+        println!("Range: {}-{}", start, end);
+        let mut part_sum = 0;
+        for num in *start..=*end {
+            if is_invalid_part2(&num) {
+                println!("  Invalid number: {}", num);
+                part_sum += num;
+            }
+        }
+        part_sum
+    }).sum()
 }
 
 fn main() {
@@ -76,5 +112,6 @@ mod tests {
     #[test]
     fn test_solve_part2() {
         let result = solve_part2(TEST_INPUT);
+        assert_eq!(result, 4174379265);
     }
 }
