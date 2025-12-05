@@ -7,18 +7,25 @@ fn is_accessible_roll(grid: &Vec<Vec<char>>, x: usize, y: usize) -> bool {
         return false;
     }
     let mut adjacent_roll_count = 0;
-    let directions = [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)];
+    let directions = [
+        (0, 1),
+        (1, 1),
+        (1, 0),
+        (1, -1),
+        (0, -1),
+        (-1, -1),
+        (-1, 0),
+        (-1, 1),
+    ];
     for (dx, dy) in directions.iter() {
         let new_x = x as isize + dx;
         let new_y = y as isize + dy;
         if new_x >= 0 && new_x < width as isize && new_y >= 0 && new_y < height as isize {
             if grid[new_y as usize][new_x as usize] == '@' {
-                println!("Found adjacent roll at ({}, {})", new_x, new_y);
                 adjacent_roll_count += 1;
             }
         }
     }
-    println!("Roll at ({}, {}) has {} adjacent rolls", x, y, adjacent_roll_count);
     adjacent_roll_count < 4
 }
 
@@ -42,7 +49,6 @@ fn solve_part1(input: &str) -> u32 {
     let mut accessible_count = 0;
     for y in 0..grid.len() {
         for x in 0..grid[0].len() {
-            println!("Checking roll at ({}, {})", x, y);
             if is_accessible_roll(&grid, x, y) {
                 accessible_count += 1;
                 accessible_rolls.push((x, y));
@@ -54,7 +60,30 @@ fn solve_part1(input: &str) -> u32 {
 }
 
 fn solve_part2(input: &str) -> u32 {
-    0
+    let rows = utils::parse_input(input);
+    let mut grid: Vec<Vec<char>> = rows.iter().map(|row| row.chars().collect()).collect();
+    let mut accessible_rolls: Vec<(usize, usize)> = vec![];
+    let mut removed_count = 0;
+    let mut i = 0;
+    loop {
+        println!("Iteration {}, removed so far: {}", i, removed_count);
+        for y in 0..grid.len() {
+            for x in 0..grid[0].len() {
+                if is_accessible_roll(&grid, x, y) {
+                    accessible_rolls.push((x, y));
+                }
+            }
+        }
+        if accessible_rolls.is_empty() {
+            break;
+        }
+        accessible_rolls.iter().for_each(|(x, y)| {
+            grid[*y][*x] = '.';
+            removed_count += 1;
+        });
+        accessible_rolls.clear();
+    }
+    removed_count
 }
 
 fn main() {
@@ -88,6 +117,6 @@ mod tests {
     #[test]
     fn test_solve_part2() {
         let result = solve_part2(TEST_INPUT);
-        assert_eq!(result, 0);
+        assert_eq!(result, 43);
     }
 }
