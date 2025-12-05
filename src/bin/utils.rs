@@ -14,3 +14,7 @@ pub fn parse_line(row: &str) -> Vec<i32> {
     let elements: Vec<&str> = row.split_whitespace().collect();
     elements.iter().map(|v| v.parse().unwrap()).collect()
 }
+
+fn main() {
+    todo!()
+}
