@@ -34,14 +34,54 @@ fn solve_part1(input: &str) -> u64 {
         .iter()
         .enumerate()
         .map(|(i, nums)| {
-            nums[1..].iter()
+            nums[1..]
+                .iter()
                 .fold(nums[0], |acc, &num| apply_operator(acc, num, operators[i]))
         })
         .sum()
 }
 
 fn solve_part2(input: &str) -> u64 {
-    0
+    let lines: Vec<&str> = input.lines().collect();
+    let mut problems: Vec<Vec<String>> = Vec::new();
+    let width = lines.iter().map(|line| line.len()).max().unwrap();
+    let mut x: usize = 0;
+    for i in 0..width {
+        let mut new_number: String = String::new();
+        let mut all_empty: bool = true;
+        for line in lines[0..lines.len() - 1].iter() {
+            let c = line.chars().nth(i).unwrap_or(' ');
+            if !c.is_whitespace() {
+                new_number.push(c);
+                all_empty = false;
+            }
+        }
+        if all_empty {
+            x += 1;
+            continue;
+        }
+        if problems.len() <= x {
+            problems.push(Vec::new());
+        }
+        problems.get_mut(x).unwrap().push(new_number);
+    }
+    let operators: Vec<char> = lines
+        .last()
+        .unwrap()
+        .chars()
+        .filter(|c| !c.is_whitespace())
+        .collect();
+
+    problems
+        .iter()
+        .enumerate()
+        .map(|(i, nums)| {
+            let nums: Vec<u64> = nums.iter().map(|s| s.parse().unwrap()).collect();
+            nums[1..]
+                .iter()
+                .fold(nums[0], |acc, &num| apply_operator(acc, num, operators[i]))
+        })
+        .sum()
 }
 
 fn main() {
@@ -70,6 +110,6 @@ mod tests {
     #[test]
     fn test_solve_part2() {
         let result = solve_part2(TEST_INPUT);
-        assert_eq!(result, 0);
+        assert_eq!(result, 3263827);
     }
 }
