@@ -1,10 +1,10 @@
 mod utils;
 
-fn solve_part1(input: &str) -> u32 {
+fn solve_part1(input: &str) -> u64 {
     0
 }
 
-fn solve_part2(input: &str) -> u32 {
+fn solve_part2(input: &str) -> u64 {
     0
 }
 
@@ -22,6 +22,7 @@ mod tests {
     use super::*;
 
     static TEST_INPUT: &'static str = r"";
+
     #[test]
     fn test_solve_part1() {
         let result = solve_part1(TEST_INPUT);
