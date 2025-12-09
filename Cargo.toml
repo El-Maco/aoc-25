@@ -5,3 +5,4 @@ edition = "2024"
 default-run = "aoc-25"
 
 [dependencies]
+rayon = "1.11.0"

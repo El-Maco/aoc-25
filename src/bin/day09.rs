@@ -1,3 +1,4 @@
+use rayon::prelude::*;
 mod utils;
 
 fn solve_part1(input: &str) -> u64 {
@@ -28,10 +29,15 @@ fn solve_part1(input: &str) -> u64 {
 }
 
 fn display_grid(grid: &Vec<String>) {
+    if grid.len() > 50 || grid[0].len() > 50 {
+        println!("Grid too large to display ({}x{})", grid.len(), grid[0].len());
+        return;
+    }
     for line in grid {
         println!("{}", line);
     }
 }
+
 
 fn solve_part2(input: &str) -> u64 {
     let rows = input
@@ -46,8 +52,12 @@ fn solve_part2(input: &str) -> u64 {
 
     println!("Rows parsed");
 
-    let max_x = rows.iter().map(|(x, _)| *x).max().unwrap();
-    let max_y = rows.iter().map(|(_, y)| *y).max().unwrap();
+    let (max_x, max_y) = rows.par_iter().fold(|| (0, 0), |(mx, my), (x, y)| {
+        (mx.max(*x), my.max(*y))
+    }).reduce(|| (0, 0), |(mx1, my1), (mx2, my2)| {
+        (mx1.max(mx2), my1.max(my2))
+    });
+
     let mut str_grid: Vec<String> = vec![".".repeat(max_x + 1); max_y + 1];
     println!("Grid initialized");
     for row in &rows {
@@ -86,48 +96,52 @@ fn solve_part2(input: &str) -> u64 {
 
     println!("Green tiles set");
 
-    str_grid.iter_mut().enumerate().for_each(|(i, line)| {
-        println!("Filling row {}/{}", i, max_y);
-        let first_g_or_red = line.find(|c| c == 'G' || c == '#');
-        let last_g_or_red = line.rfind(|c| c == 'G' || c == '#');
-        if let (Some(first), Some(last)) = (first_g_or_red, last_g_or_red) {
-            for i in first..=last {
-                if line.as_bytes()[i] == b'.' {
-                    line.replace_range(i..=i, "G");
+    str_grid
+        .par_iter_mut()
+        .for_each(|line| {
+            let first_g_or_red = line.find(|c| c == 'G' || c == '#');
+            let last_g_or_red = line.rfind(|c| c == 'G' || c == '#');
+            if let (Some(first), Some(last)) = (first_g_or_red, last_g_or_red) {
+                for i in first..=last {
+                    if line.as_bytes()[i] == b'.' {
+                        line.replace_range(i..=i, "G");
+                    }
                 }
             }
-        }
-    });
+        });
 
     println!("Grid done");
 
     display_grid(&str_grid);
 
-    let mut largest_area = 0;
-    rows.iter().for_each(|&(first_x, first_y)| {
-        rows.iter().for_each(|&(second_x, second_y)| {
+    let largest_area = rows.par_iter().map(|&(first_x, first_y)| {
+        rows.iter().filter_map(|&(second_x, second_y)| {
             if second_x > first_x && second_y > first_y {
                 let is_in_area = str_grid[first_y..second_y]
                     .iter()
-                    .map(|row| {println!("row: {:?}", row); &row[first_x..second_x]})
+                    .map(|row| {
+                        println!("row: {:?}", row);
+                        &row[first_x..second_x]
+                    })
                     .all(|slice| slice.chars().all(|c| c == 'G' || c == '#'));
 
                 if !is_in_area {
-                    return;
+                    return None;
                 }
 
                 let area = (((first_x as isize - second_x as isize).abs() + 1)
                     * ((first_y as isize - second_y as isize).abs() + 1))
                     as u64;
-                if area > largest_area {
-                    println!("New largest area found: {} (from ({},{}) to ({},{}))", area, first_x, first_y, second_x, second_y);
-                    largest_area = area;
-                }
+                Some(area)
+            } else {
+                None
             }
-        });
-    });
+        }).max().unwrap_or(0)
+    }).max().unwrap_or(0);
+
     largest_area
 }
+
 
 fn main() {
     let day = 9;
