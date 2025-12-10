@@ -120,10 +120,23 @@ fn solve_part2(input: &str) -> u64 {
                 let is_in_area = str_grid[first_y..second_y]
                     .iter()
                     .map(|row| {
-                        println!("row: {:?}", row);
                         &row[first_x..second_x]
                     })
                     .all(|slice| slice.chars().all(|c| c == 'G' || c == '#'));
+
+                let mut is_in_area = true;
+                for row in &str_grid[first_y..second_y] {
+                    for c in row[first_x..second_x].chars() {
+                        if c != 'G' && c != '#' {
+                            is_in_area = false;
+                            break;
+                        }
+                    }
+                    if !is_in_area {
+                        println!("Area check failed at row {}", row);
+                        break;
+                    }
+                }
 
                 if !is_in_area {
                     return None;
